@@ -50,15 +50,22 @@ import javax.annotation.Nullable;
  */
 public final class SystemDirectiveRegistry implements DirectiveRegistry {
 
-  public static final SystemDirectiveRegistry INSTANCE;
-
-  static {
-    try {
-      INSTANCE = new SystemDirectiveRegistry();
-    } catch (DirectiveLoadException e) {
-      // This shouldn't happen
-      throw new RuntimeException("Failed to load system directives", e);
+  // Changed to use lazy initialization with a holder class instead of static initializer
+  private static class InstanceHolder {
+    private static final SystemDirectiveRegistry INSTANCE;
+    
+    static {
+      try {
+        INSTANCE = new SystemDirectiveRegistry();
+      } catch (DirectiveLoadException e) {
+        // This shouldn't happen
+        throw new RuntimeException("Failed to load system directives", e);
+      }
     }
+  }
+
+  public static SystemDirectiveRegistry getInstance() {
+    return InstanceHolder.INSTANCE;
   }
 
   // This is the default package in which the directives are searched for.

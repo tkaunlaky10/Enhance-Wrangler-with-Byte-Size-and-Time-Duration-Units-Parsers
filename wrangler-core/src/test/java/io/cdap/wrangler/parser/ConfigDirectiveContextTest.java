@@ -61,7 +61,8 @@ public class ConfigDirectiveContextTest {
     DirectiveConfig config = gson.fromJson(CONFIG, DirectiveConfig.class);
 
     RecipeParser directives = new GrammarBasedParser(Contexts.SYSTEM, text,
-                                                     new CompositeDirectiveRegistry(SystemDirectiveRegistry.INSTANCE),
+                                                     new CompositeDirectiveRegistry(
+                                                       SystemDirectiveRegistry.getInstance()),
                                                      new ConfigDirectiveContext(config));
     directives.parse();
   }
@@ -76,7 +77,8 @@ public class ConfigDirectiveContextTest {
     DirectiveConfig config = gson.fromJson(CONFIG, DirectiveConfig.class);
 
     RecipeParser directives = new GrammarBasedParser(Contexts.SYSTEM, text,
-                                                     new CompositeDirectiveRegistry(SystemDirectiveRegistry.INSTANCE),
+                                                     new CompositeDirectiveRegistry(
+                                                       SystemDirectiveRegistry.getInstance()),
                                                      new ConfigDirectiveContext(config));
     directives.parse();
   }
@@ -91,7 +93,8 @@ public class ConfigDirectiveContextTest {
     DirectiveConfig config = gson.fromJson(CONFIG, DirectiveConfig.class);
 
     RecipeParser directives = new GrammarBasedParser(Contexts.SYSTEM, text,
-                                                     new CompositeDirectiveRegistry(SystemDirectiveRegistry.INSTANCE),
+                                                     new CompositeDirectiveRegistry(
+                                                       SystemDirectiveRegistry.getInstance()),
                                                      new ConfigDirectiveContext(config));
     List<Directive> steps = directives.parse();
     Assert.assertEquals(1, steps.size());
@@ -107,7 +110,8 @@ public class ConfigDirectiveContextTest {
     DirectiveConfig config = gson.fromJson(EMPTY, DirectiveConfig.class);
 
     RecipeParser directives = new GrammarBasedParser(Contexts.SYSTEM, text,
-                                                     new CompositeDirectiveRegistry(SystemDirectiveRegistry.INSTANCE),
+                                                     new CompositeDirectiveRegistry(
+                                                       SystemDirectiveRegistry.getInstance()),
                                                      new ConfigDirectiveContext(config));
     List<Directive> steps = directives.parse();
     Assert.assertEquals(1, steps.size());
@@ -123,7 +127,8 @@ public class ConfigDirectiveContextTest {
     DirectiveConfig config = gson.fromJson(EMPTY, DirectiveConfig.class);
 
     RecipeParser directives = new GrammarBasedParser(Contexts.SYSTEM, text,
-                                                     new CompositeDirectiveRegistry(SystemDirectiveRegistry.INSTANCE),
+                                                     new CompositeDirectiveRegistry(
+                                                       SystemDirectiveRegistry.getInstance()),
                                                      new ConfigDirectiveContext(config));
     List<Directive> steps = directives.parse();
     Assert.assertEquals(1, steps.size());

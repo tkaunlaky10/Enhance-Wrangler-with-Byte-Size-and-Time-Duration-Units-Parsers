@@ -120,7 +120,7 @@ public class DirectivesHandler extends AbstractDirectiveHandler {
   public void initialize(SystemHttpServiceContext context) throws Exception {
     super.initialize(context);
     composite = new CompositeDirectiveRegistry(
-      SystemDirectiveRegistry.INSTANCE,
+      SystemDirectiveRegistry.getInstance(),
       new UserDirectiveRegistry(context)
     );
   }

@@ -77,7 +77,8 @@ public class ConvertString {
     if (!StringUtils.isEmpty(repeatStr)) {
       removeRepeatCharPattern = Pattern.compile("(" + repeatStr + ")+");
     }
-    removeWhiteSpacesPattern = Pattern.compile("([\\s\\u0085\\p{Z}])\\1+");
+    // Include Mongolian vowel separator (U+180E) in the character class
+    removeWhiteSpacesPattern = Pattern.compile("([\\s\\u0085\\u180E\\p{Z}])\\1+");
   }
 
   /**

@@ -1,0 +1,28 @@
+# Prompts Used During Development
+
+## Initial Exploration
+"Help me implement ByteSize and TimeDuration parsers for CDAP Wrangler to handle units like KB, MB, ms, s, etc. Please explore the codebase to understand the structure."
+
+## Grammar and TokenType Implementation
+"Implement the grammar changes for ByteSize and TimeDuration tokens in Directives.g4 and update TokenType.java to include these new token types."
+
+## Token Classes Implementation
+"Implement the ByteSize.java class that implements the Token interface to handle byte sizes with units like KB, MB, etc."
+
+"Implement the TimeDuration.java class that implements the Token interface to handle time durations with units like ms, s, m, etc."
+
+## Parser Rule Implementation
+"Update the RecipeVisitor.java to handle the new ByteSize and TimeDuration tokens during parsing."
+
+## Test Implementation
+"Create parser tests for ByteSize and TimeDuration tokens in RecipeCompilerTest.java to ensure tokens are correctly parsed."
+
+"Create a test class to validate the ByteSize and TimeDuration token classes."
+
+"Implement tests for the AggregateStats directive that uses the new tokens."
+
+## Documentation
+"Update the README.md to document the new ByteSize and TimeDuration parsers."
+
+## Fix Issues
+"Fix the linter errors in AggregateStatsTest.java to properly use TestingRig." 

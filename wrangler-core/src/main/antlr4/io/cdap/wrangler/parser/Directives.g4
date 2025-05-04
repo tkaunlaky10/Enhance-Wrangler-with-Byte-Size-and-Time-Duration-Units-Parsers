@@ -64,6 +64,8 @@ directive
     | stringList
     | numberRanges
     | properties
+    | byteSizeArg
+    | timeDurationArg
   )*?
   ;
 
@@ -140,7 +142,7 @@ numberRange
  ;
 
 value
- : String | Number | Column | Bool
+ : String | Number | Column | Bool | BYTE_SIZE | TIME_DURATION
  ;
 
 ecommand
@@ -310,4 +312,52 @@ fragment Int
 
 fragment Digit
  : [0-9]
+ ;
+
+// Enhanced lexer rules for BYTE_SIZE with comprehensive unit support
+BYTE_SIZE
+ : Int BYTE_UNIT
+ ;
+
+fragment BYTE_UNIT
+ // Order matters for lexer matching - longer matches should be listed first
+ : 'YB' | 'YiB'  // yottabyte
+ | 'ZB' | 'ZiB'  // zettabyte
+ | 'EB' | 'EiB'  // exabyte
+ | 'PB' | 'PiB'  // petabyte
+ | 'TB' | 'TiB'  // terabyte
+ | 'GB' | 'GiB'  // gigabyte
+ | 'MB' | 'MiB'  // megabyte
+ | 'KB' | 'KiB'  // kilobyte
+ | 'B'           // byte
+ | 'bit' | 'bits' // bit
+ | 'nibble' | 'nibbles' // nibble (4 bits)
+ ;
+
+// Enhanced lexer rules for TIME_DURATION with comprehensive unit support
+TIME_DURATION
+ : Int TIME_UNIT
+ ;
+
+fragment TIME_UNIT
+ // Order matters for lexer matching - longer matches should be listed first
+ : 'year' | 'years' | 'y'
+ | 'month' | 'months'
+ | 'week' | 'weeks' | 'w'
+ | 'day' | 'days' | 'd'
+ | 'hour' | 'hours' | 'h'
+ | 'minute' | 'minutes' | 'min' | 'm'
+ | 'second' | 'seconds' | 'sec' | 's'
+ | 'millisecond' | 'milliseconds' | 'ms'
+ | 'microsecond' | 'microseconds' | 'us' | 'µs'
+ | 'nanosecond' | 'nanoseconds' | 'ns'
+ ;
+
+// Add new specific parser rules for byte size and time duration arguments
+byteSizeArg
+ : BYTE_SIZE
+ ;
+
+timeDurationArg
+ : TIME_DURATION
  ;

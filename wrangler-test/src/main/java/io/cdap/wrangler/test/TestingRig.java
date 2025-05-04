@@ -65,7 +65,7 @@ public final class TestingRig {
     List<String> packages = new ArrayList<>();
     packages.add(directive.getCanonicalName());
     CompositeDirectiveRegistry registry = new CompositeDirectiveRegistry(
-      SystemDirectiveRegistry.INSTANCE
+      SystemDirectiveRegistry.getInstance()
     );
 
     String migrate = new MigrateToV2(recipe).migrate();

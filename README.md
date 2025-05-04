@@ -18,6 +18,63 @@ are manually created.
   * The Data Prep Transform is [separately documented](wrangler-transform/wrangler-docs/data-prep-transform.md).
   * [Data Prep Cheatsheet](wrangler-docs/cheatsheet.md)
 
+## ByteSize and TimeDuration Parsers
+
+Wrangler now includes support for byte size and time duration units, making it easy to work with columns that contain data sizes (KB, MB, GB) and time intervals (ms, s, m, h).
+
+### ByteSize Parser
+
+The ByteSize parser makes it easy to handle data sizes with their units. It supports:
+
+- Various byte units: B, KB, MB, GB, TB, PB, etc.
+- Binary units: KiB, MiB, GiB, TiB, PiB, etc.
+- Automatic conversion to canonical bytes for calculations
+
+**Examples:**
+```
+10MB   - 10 megabytes
+5KB    - 5 kilobytes
+1.5GB  - 1.5 gigabytes
+```
+
+### TimeDuration Parser
+
+The TimeDuration parser handles time durations with their units. It supports:
+
+- Time units: ns, ms, s, m, h, d, w
+- Full names: nanoseconds, milliseconds, seconds, minutes, hours, days, weeks
+- Automatic conversion to canonical milliseconds for calculations
+
+**Examples:**
+```
+500ms     - 500 milliseconds
+2s        - 2 seconds
+5m        - 5 minutes
+1.5h      - 1.5 hours
+```
+
+### Aggregate-Stats Directive
+
+The `aggregate-stats` directive demonstrates the use of these new parsers. It allows you to aggregate byte sizes and time durations across multiple records:
+
+```
+aggregate-stats :size_column :time_column target_size target_time [size_unit] [time_unit] [aggregation_type]
+```
+
+**Arguments:**
+- `size_column`: Source column containing byte sizes
+- `time_column`: Source column containing time durations
+- `target_size`: Target column name for aggregated size
+- `target_time`: Target column name for aggregated time
+- `size_unit` (optional): Output unit for size (e.g., 'MB', 'GB')
+- `time_unit` (optional): Output unit for time (e.g., 's', 'm')
+- `aggregation_type` (optional): Aggregation type ('TOTAL' or 'AVERAGE')
+
+**Example Recipe:**
+```
+aggregate-stats :data_transfer_size :response_time total_size_mb avg_time_sec 'MB' 's' 'AVERAGE'
+```
+
 ## New Features
 
 More [here](wrangler-docs/upcoming-features.md) on upcoming features.
@@ -216,3 +273,334 @@ Cask is a trademark of Cask Data, Inc. All rights reserved.
 
 Apache, Apache HBase, and HBase are trademarks of The Apache Software Foundation. Used with
 permission. No endorsement by The Apache Software Foundation is implied by the use of these marks.
+
+# CDAP Wrangler Enhancement: ByteSize and TimeDuration Parsers
+
+## Overview
+This repository contains an enhanced version of the CDAP Wrangler data preparation tool that adds support for parsing and manipulating byte sizes (KB, MB, GB) and time durations (ms, s, m).
+
+These new capabilities enable users to:
+- Parse data that includes size units (KB, MB, GB, etc.)
+- Parse data that includes time duration units (ms, s, m, etc.)
+- Perform aggregations on these values with proper unit handling
+- Convert between different units seamlessly
+
+## Table of Contents
+- [Architecture Overview](#architecture-overview)
+- [New Parsers](#new-parsers)
+  - [ByteSize Parser](#bytesize-parser)
+  - [TimeDuration Parser](#timeduration-parser)
+- [Grammar Enhancements](#grammar-enhancements)
+- [Directive System](#directive-system)
+- [New Directive: aggregate-stats](#new-directive-aggregate-stats)
+- [Examples](#examples)
+- [Implementation Details](#implementation-details)
+
+## Architecture Overview
+
+### Wrangler System Architecture
+
+The CDAP Wrangler library is designed as a data preparation tool with several key components:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                       CDAP Wrangler System                       │
+├─────────────┬───────────────┬────────────────┬─────────────────┤
+│ wrangler-api│ wrangler-core │ wrangler-trans.│  wrangler-serv. │
+│             │               │                │                 │
+│ - Token     │ - Grammar     │ - Pipeline     │ - REST API      │
+│ - Directive │ - Parser      │   execution    │ - UI integration│
+│ - Interfaces│ - Directives  │ - ETL plugins  │                 │
+└─────────────┴───────────────┴────────────────┴─────────────────┘
+```
+
+The key components include:
+
+1. **wrangler-api**: Contains core interfaces and abstract classes defining the Wrangler functionality, including the Token system.
+2. **wrangler-core**: Contains the implementation of the grammar and directives that power the transformation engine.
+3. **wrangler-transform**: CDAP ETL plugin that integrates Wrangler into data pipelines.
+4. **wrangler-service**: Service and REST endpoints for interactive Wrangler usage.
+
+### Directive Execution Flow
+
+```
+┌──────────┐    ┌────────────┐    ┌────────────┐    ┌─────────────┐
+│  Recipe   │───►│ Tokenizer  │───►│   Parser   │───►│  Directives │
+│(Directives)    │(Lexer/ANTLR)    │(ANTLR/Java)│    │  Execution  │
+└──────────┘    └────────────┘    └────────────┘    └─────────────┘
+                                        │                  ▲
+                                        ▼                  │
+                                  ┌──────────────┐         │
+                                  │ Token Groups │─────────┘
+                                  └──────────────┘
+```
+
+The directive execution flow:
+1. User provides a recipe (list of directives)
+2. ANTLR lexer tokenizes the directives
+3. ANTLR parser processes the tokens into a parse tree
+4. Java code visits the parse tree to create Token objects
+5. Tokens are organized into TokenGroups and passed to directive implementations
+6. Directives execute the transformations on the data
+
+## New Parsers
+
+### ByteSize Parser
+
+The ByteSize parser is implemented as a new token type that can recognize and parse byte size values with units:
+
+- Supports units: B, KB, MB, GB, TB, PB
+- Handles both decimal and binary interpretations (1KB = 1000 bytes or 1024 bytes)
+- Provides methods to convert between different units
+
+#### Token Implementation
+
+The `ByteSize` class extends the `Token` interface and provides:
+- Parsing of strings like "10KB", "1.5MB", "2GB"
+- Conversion to canonical bytes value
+- Methods to get the value in different units
+
+### TimeDuration Parser
+
+The TimeDuration parser is implemented as a token type that recognizes time duration values with units:
+
+- Supports units: ms (milliseconds), s (seconds), m (minutes), h (hours)
+- Handles both integer and decimal values
+- Provides methods to convert between different time units
+
+#### Token Implementation
+
+The `TimeDuration` class extends the `Token` interface and provides:
+- Parsing of strings like "500ms", "2.5s", "10m"
+- Conversion to canonical time value (milliseconds)
+- Methods to get the value in different time units
+
+## Grammar Enhancements
+
+The Wrangler grammar (defined in `Directives.g4`) has been enhanced to recognize the new token types:
+
+```antlr
+BYTE_SIZE : NUMBER BYTE_UNIT ;
+fragment BYTE_UNIT : 'B' | 'KB' | 'MB' | 'GB' | 'TB' | 'PB' ;
+
+TIME_DURATION : NUMBER TIME_UNIT ;
+fragment TIME_UNIT : 'ms' | 's' | 'm' | 'h' ;
+```
+
+New parser rules have been added:
+- `byteSizeArg`: For accepting byte size arguments
+- `timeDurationArg`: For accepting time duration arguments
+
+These rules are integrated into the directive argument system, allowing directives to specify these new types as valid arguments.
+
+## Directive System
+
+### How Directives Work
+
+Directives in Wrangler follow this execution process:
+
+```
+┌────────────┐    ┌─────────────┐    ┌──────────────┐
+│ Directive  │───►│  Arguments  │───►│ Transformation│
+│ Definition │    │ Extraction  │    │    Logic     │
+└────────────┘    └─────────────┘    └──────────────┘
+      │                                      │
+      ▼                                      ▼
+┌────────────┐                        ┌──────────────┐
+│  Usage     │                        │ Modified     │
+│ Definition │                        │    Data      │
+└────────────┘                        └──────────────┘
+```
+
+1. Each directive is defined with a name and a set of arguments it accepts
+2. The directive parser extracts arguments based on the usage definition
+3. Arguments are validated and converted to appropriate types
+4. The directive's transformation logic is applied to the data
+5. The modified data is returned
+
+### Token Type Integration
+
+The new ByteSize and TimeDuration parsers are integrated as token types in the directive system:
+
+```
+┌────────────┐    ┌─────────────┐    ┌─────────────┐
+│ Token Type │───►│ Token Class │───►│ Parser Rule │
+│ Definition │    │Implementation│    │ Integration │
+└────────────┘    └─────────────┘    └─────────────┘
+      │                 │                   │
+      ▼                 ▼                   ▼
+┌────────────┐    ┌─────────────┐    ┌─────────────┐
+│  Enum in   │    │ ByteSize.java│    │ byteSizeArg │
+│TokenType.java   │TimeDuration.java  │timeDurationArg
+└────────────┘    └─────────────┘    └─────────────┘
+```
+
+## New Directive: aggregate-stats
+
+The `aggregate-stats` directive demonstrates the usage of the new parsers by performing aggregations on byte size and time duration values.
+
+### Usage
+
+```
+aggregate-stats <byte-size-column> <time-duration-column> <output-size-column> <output-time-column> [<size-unit>] [<time-unit>] [<aggregation-type>]
+```
+
+- `byte-size-column`: Column containing byte size values (e.g., "10MB")
+- `time-duration-column`: Column containing time duration values (e.g., "500ms")
+- `output-size-column`: Target column for size aggregation result
+- `output-time-column`: Target column for time aggregation result
+- `size-unit`: (Optional) Output unit for size (default: "MB")
+- `time-unit`: (Optional) Output unit for time (default: "s")
+- `aggregation-type`: (Optional) Type of aggregation: "TOTAL" or "AVERAGE" (default: "TOTAL")
+
+### Execution Flow
+
+The directive works as an aggregator, accumulating values across rows:
+
+```
+┌─────────┐     ┌────────────┐     ┌────────────┐     ┌────────────┐
+│Input Rows│────►│Parse Values│────►│Accumulate  │────►│Convert to  │
+│          │     │            │     │Running Total     │Output Units│
+└─────────┘     └────────────┘     └────────────┘     └────────────┘
+                                                             │
+┌─────────┐                                                  │
+│Output Row│◄────────────────────────────────────────────────┘
+│(single)  │
+└─────────┘
+```
+
+1. For each row, extract the byte size and time duration values
+2. Convert them to canonical units (bytes and milliseconds)
+3. Accumulate the values in the transient store
+4. On the last row, generate a single output row with the aggregated values
+5. Convert the aggregated values to the specified output units
+
+## Examples
+
+### Example 1: Total Aggregation
+
+```
+// Input data:
+// Row 1: data_transfer_size=10MB, response_time=500ms
+// Row 2: data_transfer_size=5MB, response_time=300ms
+// Row 3: data_transfer_size=15MB, response_time=700ms
+
+// Directive:
+aggregate-stats :data_transfer_size :response_time total_size_mb total_time_sec 'MB' 's'
+
+// Output:
+// Row 1: total_size_mb=30.0, total_time_sec=1.5
+```
+
+### Example 2: Average Aggregation with Different Units
+
+```
+// Input data:
+// Row 1: data_transfer_size=10MB, response_time=500ms
+// Row 2: data_transfer_size=5120KB, response_time=1500ms
+// Row 3: data_transfer_size=0.015GB, response_time=0.5m
+
+// Directive:
+aggregate-stats :data_transfer_size :response_time avg_size_gb avg_time_min 'GB' 'm' 'AVERAGE'
+
+// Output:
+// Row 1: avg_size_gb=0.01, avg_time_min=0.5
+```
+
+## Implementation Details
+
+### Core Classes
+
+1. **ByteSize.java**: Implements the Token interface to parse and manipulate byte size values
+   - Location: `wrangler-api/src/main/java/io/cdap/wrangler/api/parser/ByteSize.java`
+   - Key methods: `getBytes()`, `getKilobytes()`, `getMegabytes()`, etc.
+
+2. **TimeDuration.java**: Implements the Token interface to parse and manipulate time duration values
+   - Location: `wrangler-api/src/main/java/io/cdap/wrangler/api/parser/TimeDuration.java`
+   - Key methods: `getMilliseconds()`, `getSeconds()`, `getMinutes()`, etc.
+
+3. **TokenType.java**: Enum containing the token types including the new BYTE_SIZE and TIME_DURATION types
+   - Location: `wrangler-api/src/main/java/io/cdap/wrangler/api/parser/TokenType.java`
+
+4. **RecipeVisitor.java**: Extended to handle the new parser rules for byte size and time duration arguments
+   - Location: `wrangler-core/src/main/java/io/cdap/wrangler/parser/RecipeVisitor.java`
+   - Key methods: `visitByteSizeArg()`, `visitTimeDurationArg()`
+
+5. **AggregateStats.java**: New directive implementing aggregation for byte sizes and time durations
+   - Location: `wrangler-core/src/main/java/io/cdap/directives/aggregates/AggregateStats.java`
+   - Key methods: `execute()`, `reset()`, `destroy()`
+
+### Testing
+
+Comprehensive tests have been added for:
+
+1. **ByteSize parsing**: Unit tests for correct parsing of different byte size formats
+2. **TimeDuration parsing**: Unit tests for correct parsing of different time duration formats
+3. **Grammar parsing**: Tests to ensure directives using the new token types are parsed correctly
+4. **AggregateStats directive**: Tests for different aggregation scenarios and edge cases
+
+## Conclusion
+
+The addition of ByteSize and TimeDuration parsers to the CDAP Wrangler library significantly enhances its capabilities for handling and manipulating data with size and time units. The implementation follows the existing architecture and patterns of the Wrangler system while extending it with new functionality.
+
+These enhancements enable more efficient data preparation workflows, eliminating the need for complex multi-step transformations when working with data size and time duration values.
+
+## Implementation Notes and Known Issues
+
+### Java Compatibility
+
+This project is configured to build with Java 8. There are known compatibility issues when trying to build with Java 9 or newer versions. If you attempt to build with Java 9+, you will likely encounter warnings and errors similar to the following:
+
+```
+[WARNING] bootstrap class path not set in conjunction with -source 8
+[WARNING] source value 8 is obsolete and will be removed in a future release
+[WARNING] target value 8 is obsolete and will be removed in a future release
+[WARNING] To suppress warnings about obsolete options, use -Xlint:-options.
+```
+
+Additionally, various checkstyle issues may appear when implementing new features, such as:
+
+```
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-checkstyle-plugin:2.17:check (validate) on project wrangler-api: 
+Failed during checkstyle execution: There are 15 errors reported by Checkstyle 6.19 with checkstyle.xml ruleset.
+```
+
+For the most reliable build process, it is recommended to use Java 8.
+
+### DataPrep Concepts
+
+This implementation of Data Prep uses the following concepts:
+
+#### Recipe
+A Recipe is a collection of Directives. It consists of one or more Directives.
+
+#### Directive
+A Directive is a single data manipulation instruction, specified to either transform, filter, or pivot a single record into zero or more records. A directive can generate one or more steps to be executed by a pipeline.
+
+#### Row
+A Row is a collection of field names and field values.
+
+#### Column
+A Column is a data value of any of the supported Java types, one for each record.
+
+#### Pipeline
+A Pipeline is a collection of steps to be applied on a record. The record(s) outputed from a step are passed to the next step in the pipeline.
+
+### Parsing Process
+
+The ByteSize and TimeDuration parsers are integrated into the ANTLR4 parsing workflow:
+
+1. **Lexical Analysis** - ANTLR4's lexer scans the directive text and identifies tokens based on defined patterns (e.g., recognizing "10MB" as a BYTE_SIZE token)
+
+2. **Parsing** - The parser combines tokens into structured elements according to grammar rules
+
+3. **Visitor Pattern** - The `RecipeVisitor` converts parse tree nodes into proper Java objects:
+   - BYTE_SIZE tokens become `ByteSize` objects
+   - TIME_DURATION tokens become `TimeDuration` objects
+
+4. **Directive Execution** - The tokens are passed to directive implementations which can use their specific type semantics
+
+This enables natural expression of sizes and durations in directives like:
+```
+aggregate-stats :data_transfer_size :response_time total_size_mb avg_time_sec 'MB' 's' 'AVERAGE'
+```

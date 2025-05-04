@@ -34,7 +34,7 @@ public class UserDirectivesCollector implements GrammarWalker.Visitor<RuntimeExc
 
   @Override
   public void visit(String command, TokenGroup tokenGroup) {
-    DirectiveInfo info = SystemDirectiveRegistry.INSTANCE.get(command);
+    DirectiveInfo info = SystemDirectiveRegistry.getInstance().get(command);
     if (info == null) {
       userDirectives.add(command);
     }

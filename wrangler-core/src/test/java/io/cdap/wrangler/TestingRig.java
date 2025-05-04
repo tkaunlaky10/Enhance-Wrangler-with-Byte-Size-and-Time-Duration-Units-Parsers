@@ -84,7 +84,7 @@ public final class TestingRig {
   public static List<Row> execute(String[] recipe, List<Row> rows, ExecutorContext context)
     throws RecipeException, DirectiveParseException, DirectiveLoadException {
     CompositeDirectiveRegistry registry = new CompositeDirectiveRegistry(
-      SystemDirectiveRegistry.INSTANCE
+      SystemDirectiveRegistry.getInstance()
     );
 
     String migrate = new MigrateToV2(recipe).migrate();
@@ -107,7 +107,7 @@ public final class TestingRig {
   public static Pair<List<Row>, List<Row>> executeWithErrors(String[] recipe, List<Row> rows, ExecutorContext context)
     throws RecipeException, DirectiveParseException {
     CompositeDirectiveRegistry registry = new CompositeDirectiveRegistry(
-      SystemDirectiveRegistry.INSTANCE
+      SystemDirectiveRegistry.getInstance()
     );
 
     String migrate = new MigrateToV2(recipe).migrate();
@@ -121,7 +121,7 @@ public final class TestingRig {
   public static RecipePipeline execute(String[] recipe)
     throws RecipeException, DirectiveParseException, DirectiveLoadException, DirectiveNotFoundException {
     CompositeDirectiveRegistry registry = new CompositeDirectiveRegistry(
-      SystemDirectiveRegistry.INSTANCE
+      SystemDirectiveRegistry.getInstance()
     );
 
     String migrate = new MigrateToV2(recipe).migrate();
@@ -131,7 +131,7 @@ public final class TestingRig {
 
   public static RecipeParser parse(String[] recipe) throws DirectiveParseException, DirectiveLoadException {
     CompositeDirectiveRegistry registry = new CompositeDirectiveRegistry(
-      SystemDirectiveRegistry.INSTANCE
+      SystemDirectiveRegistry.getInstance()
     );
 
     String migrate = new MigrateToV2(recipe).migrate();

@@ -227,7 +227,7 @@ public class Wrangler extends Transform<StructuredRecord, StructuredRecord> impl
           // it.
           if (!config.containsMacro(Config.NAME_DIRECTIVES)) {
             // Create the registry that only interacts with system directives.
-            registry = SystemDirectiveRegistry.INSTANCE;
+            registry = SystemDirectiveRegistry.getInstance();
 
             Iterator<TokenGroup> iterator = symbols.iterator();
             while (iterator.hasNext()) {
@@ -593,7 +593,7 @@ public class Wrangler extends Transform<StructuredRecord, StructuredRecord> impl
    */
   private RecipeParser getRecipeParser(StageContext context) {
 
-    registry = new CompositeDirectiveRegistry(SystemDirectiveRegistry.INSTANCE, new UserDirectiveRegistry(context));
+    registry = new CompositeDirectiveRegistry(SystemDirectiveRegistry.getInstance(), new UserDirectiveRegistry(context));
     try {
       registry.reload(context.getNamespace());
     } catch (Exception e) {

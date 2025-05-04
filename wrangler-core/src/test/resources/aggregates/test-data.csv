@@ -1,0 +1,11 @@
+size,time,description
+10MB,5m,Medium file upload fast response
+500KB,30s,Small file upload moderate response 
+2GB,1h,Large file upload slow response
+1.5MB,15s,Small report generation
+750KB,45s,PDF generation
+3.2GB,2h,Video processing
+25MB,10m,Image batch processing
+100MB,3m,Database backup
+400MB,25m,Log file analysis
+1GB,40m,Archive extraction 

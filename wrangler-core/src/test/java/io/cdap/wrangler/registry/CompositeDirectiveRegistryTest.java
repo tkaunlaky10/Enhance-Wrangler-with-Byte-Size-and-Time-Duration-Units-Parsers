@@ -114,7 +114,7 @@ public class CompositeDirectiveRegistryTest {
   @Test
   public void testIteratorUsage() throws Exception {
     DirectiveRegistry registry = new CompositeDirectiveRegistry(
-      SystemDirectiveRegistry.INSTANCE,
+      SystemDirectiveRegistry.getInstance(),
       new TestDirectiveRegistry()
     );
 
@@ -124,7 +124,7 @@ public class CompositeDirectiveRegistryTest {
       iterator.next();
       count++;
     }
-    Assert.assertEquals(85, count);
+    Assert.assertEquals(86, count);
 
     registry.reload("");
 
@@ -134,7 +134,7 @@ public class CompositeDirectiveRegistryTest {
       iterator.next();
       count++;
     }
-    Assert.assertEquals(85, count);
+    Assert.assertEquals(86, count);
 
   }
 }

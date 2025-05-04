@@ -1,0 +1,52 @@
+[
+  {
+    "size": "10MB",
+    "time": "5m",
+    "description": "Medium file upload fast response"
+  },
+  {
+    "size": "500KB",
+    "time": "30s",
+    "description": "Small file upload moderate response"
+  },
+  {
+    "size": "2GB",
+    "time": "1h",
+    "description": "Large file upload slow response"
+  },
+  {
+    "size": "1.5MB",
+    "time": "15s",
+    "description": "Small report generation"
+  },
+  {
+    "size": "750KB",
+    "time": "45s",
+    "description": "PDF generation"
+  },
+  {
+    "size": "3.2GB",
+    "time": "2h",
+    "description": "Video processing"
+  },
+  {
+    "size": "25MB",
+    "time": "10m",
+    "description": "Image batch processing"
+  },
+  {
+    "size": "100MB",
+    "time": "3m",
+    "description": "Database backup"
+  },
+  {
+    "size": "400MB",
+    "time": "25m",
+    "description": "Log file analysis"
+  },
+  {
+    "size": "1GB",
+    "time": "40m",
+    "description": "Archive extraction"
+  }
+] 

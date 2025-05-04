@@ -212,7 +212,7 @@ public class LineageOperationsTest {
   }
 
   private RecipeParser getRecipeParser(List<String> directives) throws DirectiveParseException {
-    CompositeDirectiveRegistry registry = new CompositeDirectiveRegistry(SystemDirectiveRegistry.INSTANCE);
+    CompositeDirectiveRegistry registry = new CompositeDirectiveRegistry(SystemDirectiveRegistry.getInstance());
     return new GrammarBasedParser("default", new MigrateToV2(directives).migrate(), registry);
   }
 }

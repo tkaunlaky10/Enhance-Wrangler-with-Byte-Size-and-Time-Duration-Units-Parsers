@@ -610,7 +610,7 @@ public class WorkspaceHandler extends AbstractDirectiveHandler {
     GrammarWalker walker = new GrammarWalker(new RecipeCompiler(), new ConfigDirectiveContext(DirectiveConfig.EMPTY));
     AtomicBoolean hasDirectives = new AtomicBoolean();
     walker.walk(recipe, (command, tokenGroup) -> {
-      DirectiveInfo info = SystemDirectiveRegistry.INSTANCE.get(command);
+      DirectiveInfo info = SystemDirectiveRegistry.getInstance().get(command);
       if (info != null) {
         systemDirectives.put(command, info.getDirectiveClass());
       }

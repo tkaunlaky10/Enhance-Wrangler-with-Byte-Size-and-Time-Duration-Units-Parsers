@@ -94,7 +94,7 @@ public class AbstractDirectiveHandler extends AbstractWranglerHandler {
   public void initialize(SystemHttpServiceContext context) throws Exception {
     super.initialize(context);
     composite = new CompositeDirectiveRegistry(
-      SystemDirectiveRegistry.INSTANCE,
+      SystemDirectiveRegistry.getInstance(),
       new UserDirectiveRegistry(context)
     );
     schemaManagementEnabled = Feature.WRANGLER_SCHEMA_MANAGEMENT.isEnabled(context);
