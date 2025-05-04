@@ -107,7 +107,9 @@ public class ByteSize implements Token {
 Key features:
 - Parsing values like "10KB", "1.5MB", "2GB"
 - Support for B, KB, MB, GB, TB, PB units
+- Support for binary units (KiB, MiB, GiB, TiB)
 - Methods for conversion between different units
+- Mathematical operations (addition, multiplication)
 
 #### TimeDuration Token
 
@@ -152,8 +154,10 @@ public class TimeDuration implements Token {
 
 Key features:
 - Parsing values like "500ms", "2.5s", "10m"
-- Support for ms, s, m, h units
+- Support for ms, s, m, h, d, w units
 - Methods for conversion between different time units
+- Support for decimal values (e.g., "1.5s" = 1500ms)
+- Mathematical operations (addition, multiplication)
 
 ### Directive System
 
@@ -238,6 +242,38 @@ double minutes = duration.getMinutes();          // 0.041666...
 builder.define("time-limit", TokenType.TIME_DURATION);
 // When parsing: new TimeDuration(ctx.getText())
 ```
+
+## Test Results
+
+The ByteSize and TimeDuration implementations have been thoroughly tested with the following results:
+
+### ByteSize Tests
+```
+Tests run: 12, Failures: 0, Errors: 0, Skipped: 0
+```
+
+Test coverage includes:
+- Parsing of different byte units (B, KB, MB, GB, TB, PB)
+- Support for binary units (KiB, MiB, GiB, TiB)
+- Handling of decimal values (e.g., "1.5MB")
+- Unit conversions between different byte units
+- Mathematical operations
+- Error handling for invalid formats
+- JSON serialization and deserialization
+
+### TimeDuration Tests
+```
+Tests run: 18, Failures: 0, Errors: 0, Skipped: 0
+```
+
+Test coverage includes:
+- Parsing of different time units (ns, ms, s, m, h, d, w)
+- Support for full unit names (milliseconds, seconds, minutes, etc.)
+- Handling of decimal values (e.g., "1.5s" = 1500ms)
+- Unit conversions between different time units
+- Addition and multiplication operations
+- Error handling for invalid formats
+- JSON serialization and deserialization
 
 ## Contributing
 

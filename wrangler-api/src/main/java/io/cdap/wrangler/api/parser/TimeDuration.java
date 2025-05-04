@@ -143,15 +143,31 @@ public class TimeDuration implements Token {
 
         if (timeUnit != null) {
             // Use TimeUnit for standard units
-            this.totalMilliseconds = timeUnit.toMillis((long) numericValue);
-            
-            // Simple overflow check
-            boolean hasFractionalPart = numericValue % 1.0 != 0;
-            long estimatedMaxValue = timeUnit.toMillis((long) (numericValue + 0.999));
-            boolean potentialOverflow = estimatedMaxValue > this.totalMilliseconds + timeUnit.toMillis(1);
-            
-            if (potentialOverflow && hasFractionalPart) {
-                // We'll rely on long cast truncation for simplicity
+            // FIX: Instead of casting numericValue to long (which truncates decimal values),
+            // calculate milliseconds directly based on the unit
+            switch (timeUnit) {
+                case MILLISECONDS:
+                    this.totalMilliseconds = (long) (numericValue);
+                    break;
+                case SECONDS:
+                    this.totalMilliseconds = (long) (numericValue * 1000);
+                    break;
+                case MINUTES:
+                    // This fixes the issue with "0.5m" being parsed as 0 minutes (truncated)
+                    // By performing the multiplication first, we preserve the decimal part: 0.5 * 60 * 1000 = 30000
+                    this.totalMilliseconds = (long) (numericValue * 60 * 1000);
+                    break;
+                case HOURS:
+                    this.totalMilliseconds = (long) (numericValue * 60 * 60 * 1000);
+                    break;
+                case DAYS:
+                    this.totalMilliseconds = (long) (numericValue * 24 * 60 * 60 * 1000);
+                    break;
+                default:
+                    // Fallback for any other units (microseconds, nanoseconds)
+                    // Since we're storing as milliseconds, smaller units will be truncated
+                    this.totalMilliseconds = timeUnit.toMillis((long) numericValue);
+                    break;
             }
         } else {
             // Handle custom units not directly supported by TimeUnit
